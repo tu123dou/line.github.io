@@ -50,29 +50,29 @@
 <body>
   <div id="form">
     <div class="line">
-      <label from="S">S前</label>
+      <label from="S">税前工资</label>
       <input type="number" name="S">
     </div>
     <div class="line">
-      <label from="Y">Y数</label>
+      <label from="Y">月数</label>
       <input type="number" name="Y" value="12">
     </div>
     <div class="line">
-      <label from="W">五X</label>
+      <label from="W">五险一金</label>
       <input type="number" name="W" value="7174">
       <div class="desc">b=7174 cd=4341</div>
     </div>
     <div class="line">
-      <label from="K">扣C</label>
+      <label from="K">附加扣除</label>
       <input type="number" name="K" value="1500">
       <div class="desc">1500/1000</div>
     </div>
     <div class="line">
-      <label from="S1">S1前</label>
+      <label from="S1">对比税前工资</label>
       <input type="number" name="S1">
     </div>
     <div class="sLine">
-      <button type="button" onclick="submitForm()">提交</button>
+      <button type="button" onclick="submitForm()">计算</button>
       <button type="button" onclick="resetForm()">重置</button>
       <button type="button" onclick="drawing()">绘图</button>
     </div>
@@ -148,7 +148,7 @@
     
     function submitForm() {
       let { total, tax } = computeTotal()
-      let str = `最终: ${total}, tax: ${tax}`
+      let str = `税后总收入: ${total}, 总共缴税: ${tax}`
       if(getValue('S1')){
         let { total: total1 } = computeTotal(getValue('S1'))
         str += `, diff: ${(total1-total).toFixed(0)}`
