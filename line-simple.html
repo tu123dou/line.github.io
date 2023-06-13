@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN" style="height: 100%">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      min-height: 100%;
+      margin: 0;
+      height: 100%;
+    }
+
+    #form {
+      padding: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+
+    .line {
+      margin-bottom: 10px;
+      width: 45%;
+    }
+
+    .desc {
+      color: #8c8c8c;
+      font-size: 14px;
+    }
+
+    input {
+      font-size: 16px;
+      width: 100px;
+    }
+    .sLine{
+      width: 100%;
+    }
+
+    #total {
+      width: 100%;
+      font-weight: bold;
+    }
+
+    #container {
+      height: 800px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="form">
+    <div class="line">
+      <label from="S">S前</label>
+      <input type="number" name="S">
+    </div>
+    <div class="line">
+      <label from="Y">Y数</label>
+      <input type="number" name="Y" value="12">
+    </div>
+    <div class="line">
+      <label from="W">五X</label>
+      <input type="number" name="W" value="7174">
+      <div class="desc">b=7174 cd=4341</div>
+    </div>
+    <div class="line">
+      <label from="K">扣C</label>
+      <input type="number" name="K" value="1500">
+      <div class="desc">1500/1000</div>
+    </div>
+    <div class="line">
+      <label from="S1">S1前</label>
+      <input type="number" name="S1">
+    </div>
+    <div class="sLine">
+      <button type="button" onclick="submitForm()">提交</button>
+      <button type="button" onclick="resetForm()">重置</button>
+      <button type="button" onclick="drawing()">绘图</button>
+    </div>
+    <div id="total"></div>
+  </div>
+  <div id="container"></div>
+
+
+  <script type="text/javascript" src="https://fastly.jsdelivr.net/npm/echarts@5.4.2/dist/echarts.min.js"></script>
+
+  <script>
+    function showData() {
+      var others = localStorage.getItem('others')
+      others = others ? others.split(',') : []
+      if (others.length > 0) {
+        setValue('S', others[0])
+        setValue('Y', others[1])
+        setValue('W', others[2])
+        setValue('K', others[3])
+      }
+    }
+    showData()
+    function getValue(name) {
+      var value = document.querySelector(`input[name=${name}]`).value
+      return Number(value)
+    }
+    function setValue(name, va = 0) {
+      var value = document.querySelector(`input[name=${name}]`).value = va
+      return Number(value)
+    }
+    function resetForm() {
+      setValue('S')
+      setValue('Y', 12)
+      setValue('W', 7174)
+      setValue('K', 1500)
+      localStorage.setItem('others', `0,12,0,0`)
+      localStorage.setItem('totalTax', `0,0`)
+      document.querySelector('#total').innerHTML = ''
+    }
+    function computeTotal(SQvalue, YFvalue) {
+      const SQ = SQvalue ? SQvalue : getValue('S');
+      const YF = YFvalue ? YFvalue : getValue('Y')
+      const WX = getValue('W');
+      const KC = getValue('K')
+      const taxIn = SQ * YF - WX * 12 - 60000 - KC * 12
+      let In = 0
+      let InM = 0
+      if (taxIn > 960000) {
+        In = 0.45
+        InM = 181920
+      } else if (taxIn > 660000) {
+        In = 0.35
+        InM = 85920
+      } else if (taxIn > 420000) {
+        In = 0.3
+        InM = 52920
+      } else if (taxIn > 300000) {
+        In = 0.25
+        InM = 31920
+      } else if (taxIn > 144000) {
+        In = 0.2
+        InM = 16920
+      } else if (taxIn > 36000) {
+        In = 0.1
+        InM = 2520
+      }
+      let tax = taxIn * In - InM
+      tax = tax < 0 ? 0 : tax
+      const total = SQ * YF - WX * 12 - tax
+      localStorage.setItem('others', `${getValue('S')},${getValue('Y')},${WX},${KC}`)
+      return { total: total.toFixed(2), tax: tax.toFixed(2) }
+    }
+    
+    function submitForm() {
+      let { total, tax } = computeTotal()
+      let str = `最终: ${total}, tax: ${tax}`
+      if(getValue('S1')){
+        let { total: total1 } = computeTotal(getValue('S1'))
+        str += `, diff: ${(total1-total).toFixed(0)}`
+      }
+      
+      document.querySelector('#total').innerHTML = str
+      drawing()
+    }
+
+    // 绘制图
+    var dom = document.getElementById('container');
+    var myChart = echarts.init(dom, null, {
+      renderer: 'canvas',
+      useDirtyRect: false
+    });
+
+    function drawing() {
+      var xData = []
+      var seriesData1 = []
+      var seriesData2 = []
+      for (var i = 31000; i <= 60000; i += 100) {
+        xData.push(i)
+        let { total, tax } = computeTotal(i, 12)
+        let { total: total2, tax: tax2 } = computeTotal(i, 15.5)
+        seriesData1.push(total)
+        seriesData2.push(total2)
+      }
+      
+      var option = {
+        tooltip: {
+          trigger: 'axis'
+        },
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          containLabel: true
+        },
+        xAxis: {
+          type: 'category',
+          data: xData
+        },
+        yAxis: {
+          type: 'value',
+          min: 200000
+        },
+        series: [
+          {
+            name: '12+',
+            data: seriesData2,
+            type: 'line'
+          },
+          {
+            name: '12',
+            data: seriesData1,
+            type: 'line'
+          }
+        ]
+      };
+
+      if (option && typeof option === 'object') {
+        myChart.setOption(option);
+      }
+
+    }
+
+
+
+
+
+
+
+
+    window.addEventListener('resize', myChart.resize);
+  </script>
+</body>
+
+</html>
