@@ -50,25 +50,25 @@
 <body>
   <div id="form">
     <div class="line">
-      <label from="S">税前工资</label>
+      <label from="S">S前</label>
       <input type="number" name="S">
     </div>
     <div class="line">
-      <label from="Y">月数</label>
+      <label from="Y">Y数</label>
       <input type="number" name="Y" value="12">
     </div>
     <div class="line">
-      <label from="W">五险一金</label>
+      <label from="W">五X</label>
       <input type="number" name="W" value="7174">
       <div class="desc">b=7174 cd=4341</div>
     </div>
     <div class="line">
-      <label from="K">附加扣除</label>
+      <label from="K">扣C</label>
       <input type="number" name="K" value="1500">
       <div class="desc">1500/1000</div>
     </div>
     <div class="line">
-      <label from="S1">对比税前工资</label>
+      <label from="S1">S1前</label>
       <input type="number" name="S1">
     </div>
     <div class="sLine">
@@ -148,7 +148,7 @@
     
     function submitForm() {
       let { total, tax } = computeTotal()
-      let str = `税后总收入: ${total}, 总共缴税: ${tax}`
+      let str = `最终: ${total}, tax: ${tax}`
       if(getValue('S1')){
         let { total: total1 } = computeTotal(getValue('S1'))
         str += `, diff: ${(total1-total).toFixed(0)}`
